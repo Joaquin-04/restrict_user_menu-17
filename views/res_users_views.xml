@@ -7,9 +7,9 @@
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Restrict Specific Menu" invisible="is_admin">
+                <page string="Hide Specific Menu" invisible="is_admin">
                     <tree>
-                        <field name="hidden_menu_items"/>
+                        <field name="hide_menu_ids"/>
                     </tree>
                 </page>
             </xpath>
@@ -27,20 +27,9 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Restrict users" name="restrict_users">
                     <tree>
-                        <field name="restricted_users"/>
+                        <field name="restrict_user_ids"/>
                     </tree>
                 </page>
-            </xpath>
-        </field>
-    </record>
-    <!--Inherited view of the model ir.ui.menu-->
-    <record id="edit_menu_access_search_inherit" model="ir.ui.view">
-        <field name="name">ir.ui.menu.search.inherit</field>
-        <field name="model">ir.ui.menu</field>
-        <field name="inherit_id" ref="base.edit_menu_access_search"/>
-        <field name="arch" type="xml">
-            <xpath expr="//search" position="inside">
-                <filter name="roots" string="Application" context="{'group_by':'root_id'}"/>
             </xpath>
         </field>
     </record>

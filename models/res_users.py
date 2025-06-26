@@ -1,36 +1,57 @@
-from odoo import fields, models, api
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+from odoo import fields, models
 
 
-class CustomUser(models.Model):
+class ResUsers(models.Model):
     """
-    Model to handle restricting specific menu items for certain users.
+    Model to handle hiding specific menu items for certain users.
     """
     _inherit = 'res.users'
 
     def write(self, vals):
         """
-         Write method for the CustomUser model.
-         Ensure the menu will not remain restrict after removing it from the list.
+         Write method for the ResUsers model.
+         Ensure the menu will not remain hidden after removing it from the list.
            """
-        res = super(CustomUser, self).write(vals)
+        res = super(ResUsers, self).write(vals)
         for record in self:
-            for menu in record.hidden_menu_items:
+            for menu in record.hide_menu_ids:
                 menu.write({
-                    'restricted_users': [fields.Command.link(record.id)]
+                    'restrict_user_ids': [fields.Command.link(record.id)]
                 })
         return res
 
     def _get_is_admin(self):
         """
         Compute method to check if the user is an admin.
-        The Hide specific menu tab will be restrict for the Admin user form.
+        The Hide specific menu tab will be hidden for the Admin user form.
         """
         for rec in self:
             rec.is_admin = False
             if rec.id == self.env.ref('base.user_admin').id:
                 rec.is_admin = True
 
-    hidden_menu_items = fields.Many2many(
+    hide_menu_ids = fields.Many2many(
         'ir.ui.menu', string="Hidden Menu",
         store=True, help='Select menu items that need to '
                          'be hidden to this user.')
@@ -38,27 +59,12 @@ class CustomUser(models.Model):
                               help='Check if the user is an admin.')
 
 
-class CustomUiMenu(models.Model):
+class IrUiMenu(models.Model):
     """
     Model to restrict the menu for specific users.
     """
     _inherit = 'ir.ui.menu'
 
-    restricted_users = fields.Many2many(
+    restrict_user_ids = fields.Many2many(
         'res.users', string="Restricted Users",
         help='Users restricted from accessing this menu.')
-
-
-    root_id = fields.Many2one('ir.ui.menu', string="Application", compute='_compute_root_id', store=True)
-
-    @api.depends('parent_id')
-    def _compute_root_id(self):
-        """
-        Computes root element for every record and stores in root_id field.
-        """
-        for record in self:
-            current_record = record
-            while current_record.parent_id:
-                current_record = current_record.parent_id
-            record.root_id = current_record.id
-        return True
